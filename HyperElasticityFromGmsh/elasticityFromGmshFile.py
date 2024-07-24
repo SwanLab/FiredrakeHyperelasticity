@@ -1,6 +1,6 @@
 from firedrake import *
 
-mesh = Mesh('metaMaterial.msh')
+mesh = Mesh('openHole.msh')
 
 #mesh = BoxMesh(15,5,5,5,1,1)
 
@@ -8,7 +8,7 @@ mesh = Mesh('metaMaterial.msh')
 left = 1
 V = VectorFunctionSpace(mesh,'CG',1)
 
-bcs = DirichletBC(V,0,[11])
+bcs = DirichletBC(V,0,[12])
 g = Constant((1e7,0))
 
 u = Function(V)
@@ -19,7 +19,7 @@ strain = sym(grad(u))
 
 internalEnergy = 0.5*(2*mu*inner(strain,strain) + lam*inner(div(u),div(u)))*dx
 #externalWork = inner(g,u)*ds
-externalWork = inner(g,u('+'))*dS(12)
+externalWork = inner(g,u('+'))*dS(15)
 #externalWork = g*u('+')*dS(12)
 
 J = 0.5*internalEnergy - externalWork

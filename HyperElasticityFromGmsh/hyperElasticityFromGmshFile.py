@@ -5,10 +5,10 @@ class HyperElasticProblem():
 
     def __init__(self):
         self.mu = Constant(1)#27.4e9
-        self.lam = Constant(100)#64.0e9 
+        self.lam = Constant(10)#64.0e9 
 
     def computeMesh(self):
-        return Mesh('metaMaterial.msh')
+        return Mesh('openHole.msh')
 
     def computeInternalEnergy(self,z):
         quad_degree = 5
@@ -26,8 +26,8 @@ class HyperElasticProblem():
 
     def computeExternalWork(self,z):
         (u,p) = split(z)
-        g = Constant((-0.01,0))
-        W = inner(g,u)*ds(12)
+        g = Constant((0,0.2))
+        W = inner(g,u)*ds(15)
         return W
     
     def computeTotalEnergy(self,z):
@@ -51,16 +51,19 @@ class HyperElasticProblem():
         Z = V*Q
         z = Function(Z)
 
-        z.split()[0].rename('displacement')
-        z.split()[1].rename('pressure')
+        z.subfunctions[0].rename('displacement')
+        z.subfunctions[1].rename('pressure')
         
-        bcs = DirichletBC(Z.sub(0),0,[11])
+        bcs = DirichletBC(Z.sub(0),0,[12])
+        bcs2 = DirichletBC(Z.sub(0),(0,0.01),[15])
         
         dz = TestFunction(Z)
         r  = self.computeResidual(z,dz)
 
-        solve(r==0,z,bcs,solver_parameters={'snes_monitor':None,'ksp_monitor':None,})        
-        File('output.pvd').write(*z.split())
+        solve(r==0,z,bcs=[bcs],solver_parameters={'snes_monitor':None,'ksp_monitor':None,})
+        #solve(r==0,z,bcs=[bcs,bcs2],solver_parameters={'snes_monitor':None,'ksp_monitor':None,})
+        print(z.subfunctions)
+        VTKFile('output.pvd').write(*z.subfunctions)
         return{}
 
 e = HyperElasticProblem()
